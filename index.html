@@ -701,9 +701,10 @@
           </div>
         </form>
         <p class="source-note">
-          Queries use all 2,226,382 rows in the local CSV. Median prices exclude
-          missing and zero values. Price per ft² uses the source analysis bounds
-          ($1–$5,000).
+          This public explorer filters a reproducible 50,000-listing sample from
+          2,226,382 source records. Counts and medians reflect the sample. For
+          exact full-dataset results, run the local dashboard with its Python
+          data service.
         </p>
       </aside>
 
@@ -722,9 +723,9 @@
         <div id="content" class="loading">
           <section class="metrics" aria-label="Filtered market summary">
             <div class="metric">
-              <div class="metric-label">Matching listings</div>
+              <div class="metric-label">Matching sampled listings</div>
               <div class="metric-value" id="metric-count">—</div>
-              <div class="metric-foot">All records matching filters</div>
+              <div class="metric-foot">Within the published sample</div>
             </div>
             <div class="metric">
               <div class="metric-label">Median listing price</div>
@@ -743,7 +744,7 @@
             <div class="panel">
               <div class="panel-top">
                 <h2>Price distribution</h2>
-                <span class="panel-kicker">Valid listings</span>
+                <span class="panel-kicker">Valid sampled listings</span>
               </div>
               <div
                 class="bars"
@@ -823,6 +824,7 @@
         </div>
       </main>
     </div>
+    <script src="./assets/sample_explorer.js"></script>
     <script>
       const $ = (id) => document.getElementById(id);
       const number = new Intl.NumberFormat("en-US");
@@ -855,6 +857,7 @@
         request: 0,
         cityExact: false,
       };
+      let explorer;
       const filters = $("filters");
       const money = (value) => (value == null ? "—" : currency.format(value));
       const plain = (value) => (value == null ? "—" : number.format(value));
@@ -879,10 +882,7 @@
         $("content").classList.add("loading");
         error("");
         try {
-          const response = await fetch("/api/explore?" + params());
-          const data = await response.json();
-          if (!response.ok)
-            throw new Error(data.error || "Unable to load results");
+          const data = explorer.explore(params());
           if (request !== state.request) return;
           state.data = data;
           if (!data.listings.some((item) => item.id === state.selected))
@@ -904,7 +904,7 @@
         $("metric-ppsf").textContent =
           data.median_ppsf == null ? "—" : `${money(data.median_ppsf)} / ft²`;
         $("results-count").textContent =
-          `${number.format(data.matched)} matching records`;
+          `${number.format(data.matched)} matching sampled records`;
         renderPrice(data.price_distribution);
         renderLocations(data.locations, data.location_type);
         renderStatuses(data.statuses);
@@ -1086,11 +1086,12 @@
       });
       (async () => {
         try {
-          const response = await fetch("/api/meta");
-          if (!response.ok) throw new Error("The data service is unavailable");
-          const meta = await response.json();
+          const response = await fetch("./assets/listings-sample.json");
+          if (!response.ok) throw new Error("Sample data could not be loaded");
+          explorer = new SampleExplorer(await response.json());
+          const meta = explorer.meta();
           $("total-pill").textContent =
-            `${number.format(meta.total)} source listings`;
+            `${number.format(meta.total)} sampled · ${number.format(meta.source_total)} source`;
           $("state").innerHTML += meta.states
             .map(
               (name) =>
@@ -1106,9 +1107,7 @@
           load();
         } catch (cause) {
           $("content").classList.remove("loading");
-          error(
-            cause.message + ". Start the dashboard server from this project.",
-          );
+          error(cause.message + ". Refresh this page and try again.");
         }
       })();
     </script>

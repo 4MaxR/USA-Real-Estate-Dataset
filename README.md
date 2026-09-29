@@ -183,11 +183,15 @@ USA-Real-Estate-Dataset/
 ├── scripts/
 │   ├── analyze_data.py         # profiling + every KPI (source of truth for numbers)
 │   ├── audit_charts.py         # chart checks
+│   ├── build_pages_sample.py   # deterministic public-dashboard sample
 │   ├── generate_charts.py      # 5 dark-theme charts (portfolio design system)
 │   └── serve_dashboard.py      # local data service for full-dataset exploration
+├── assets/
+│   ├── listings-sample.json    # 50,000 listing sample for GitHub Pages
+│   └── sample_explorer.js      # browser-side filtering and summaries
 ├── dashboard/
-│   └── index.html              # interactive browser dashboard
-├── index.html                  # root dashboard page
+│   └── index.html              # full-data dashboard for the local server
+├── index.html                  # static GitHub Pages dashboard
 ├── profile.json                # saved data profile
 └── README.md
 ```
@@ -212,10 +216,19 @@ uv pip install pandas numpy matplotlib
 
 ## Interactive Dashboard
 
-The HTML dashboard queries the **full CSV** through a local Python data service. It
-provides state, city, status, price, bedroom, bathroom, and area filters; linked location
-and status selections; price distribution; sortable listing pages; and individual record
-details. Its medians are recomputed from all matching rows, not from a sample.
+The [GitHub Pages dashboard](https://4maxr.github.io/USA-Real-Estate-Dataset/) filters a
+reproducible, uniformly selected **50,000-listing sample** in the browser. Its counts,
+charts, and medians describe that sample. The sample is checked into `assets/`, so the
+public page needs no Python server. Regenerate it from the local CSV with:
+
+```bash
+.venv/Scripts/python.exe scripts/build_pages_sample.py  # Windows
+.venv/bin/python scripts/build_pages_sample.py          # macOS / Linux
+```
+
+For exact results from **all 2,226,382 listings**, use the local dashboard. It provides
+the same filters, linked location and status selections, sortable listing pages, and
+individual record details through a local Python data service.
 
 With the environment above installed, run:
 
@@ -238,8 +251,8 @@ Stated explicitly so the analysis is easy to trust:
   export).
 - **This is a market snapshot, not a trend.** There are no listing dates, and
   `prev_sold_date` covers only 67% of rows — price movements over time cannot be derived.
-- **The dashboard needs the local server** and enough memory to load the full CSV. It is
-  intended for local exploration, not public hosting.
+- **The public dashboard is sample-based.** Exact full-dataset filtering requires the
+  local server and enough memory to load the CSV.
 - **The street column is unusable** (99.5% numeric junk) — address-level analysis is not
   possible with this file.
 - **Validity bounds are judgment calls**, documented in the script: e.g. prices above
