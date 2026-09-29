@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>USA Real Estate Explorer</title>
+    <style>
+      :root {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        color: #e8f1f7;
+        background: #091321;
+        font-synthesis: none;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 2px solid #6ae7c4;
+        outline-offset: 2px;
+      }
+      .app {
+        max-width: 1600px;
+        margin: auto;
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 276px minmax(0, 1fr);
+      }
+      .sidebar {
+        background: #0d1b2b;
+        border-right: 1px solid #223549;
+        padding: 28px 22px;
+        align-self: stretch;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 38px;
+      }
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #6ae7c4;
+        color: #091321;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+      }
+      .brand-name {
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      .brand-sub {
+        color: #8da3b8;
+        font-size: 12px;
+        margin-top: 3px;
+      }
+      .side-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #8da3b8;
+        font-weight: 700;
+        margin: 0 0 20px;
+      }
+      .field {
+        display: block;
+        margin-bottom: 17px;
+      }
+      .field span {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #a9bdce;
+        margin-bottom: 8px;
+      }
+      .field input,
+      .field select {
+        width: 100%;
+        background: #132437;
+        color: #e8f1f7;
+        border: 1px solid #2b4257;
+        border-radius: 8px;
+        padding: 11px 12px;
+        min-height: 42px;
+      }
+      .field input::placeholder {
+        color: #71879b;
+      }
+      .field select {
+        appearance: auto;
+      }
+      .two-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .filter-actions {
+        display: flex;
+        gap: 9px;
+        margin-top: 23px;
+      }
+      .filter-actions button {
+        min-height: 41px;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid #365166;
+        background: #172b40;
+        color: #e8f1f7;
+        font-weight: 600;
+      }
+      .filter-actions .apply {
+        flex: 1;
+        background: #6ae7c4;
+        color: #082017;
+        border-color: #6ae7c4;
+      }
+      .source-note {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #8499ab;
+        margin-top: 28px;
+        border-top: 1px solid #223549;
+        padding-top: 18px;
+      }
+      .main {
+        padding: 30px 34px 50px;
+        min-width: 0;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+        color: #6ae7c4;
+        font-weight: 700;
+      }
+      .heading-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 8px 0 23px;
+      }
+      h1 {
+        font-size: clamp(25px, 3vw, 35px);
+        line-height: 1.16;
+        letter-spacing: -0.035em;
+        margin: 0;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      h3 {
+        font-size: 15px;
+        margin: 0;
+      }
+      .subtitle {
+        color: #9bb0c2;
+        font-size: 13px;
+        margin: 8px 0 0;
+      }
+      .count-pill {
+        color: #b6c7d6;
+        border: 1px solid #294257;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 13px;
+        margin-bottom: 16px;
+      }
+      .metric,
+      .panel {
+        background: #102034;
+        border: 1px solid #263b51;
+        border-radius: 12px;
+      }
+      .metric {
+        padding: 18px 19px;
+      }
+      .metric-label {
+        font-size: 12px;
+        color: #9fb4c6;
+      }
+      .metric-value {
+        font-size: 27px;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        margin-top: 7px;
+        font-variant-numeric: tabular-nums;
+      }
+      .metric-foot {
+        font-size: 11px;
+        color: #8da3b7;
+        margin-top: 7px;
+      }
+      .analytics {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .panel {
+        padding: 20px;
+        min-width: 0;
+      }
+      .panel-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .panel-kicker {
+        color: #8ea5b9;
+        font-size: 12px;
+      }
+      .bars {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 10px;
+        align-items: end;
+        height: 205px;
+        margin-top: 25px;
+      }
+      .bar-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: end;
+        height: 100%;
+        min-width: 0;
+      }
+      .bar-value {
+        font-size: 11px;
+        color: #bacbd7;
+        margin-bottom: 5px;
+        white-space: nowrap;
+      }
+      .bar {
+        width: 100%;
+        max-width: 42px;
+        background: #6ae7c4;
+        border-radius: 5px 5px 0 0;
+        min-height: 2px;
+      }
+      .bar-label {
+        font-size: 10px;
+        color: #9bb0c2;
+        text-align: center;
+        margin-top: 8px;
+        line-height: 1.25;
+        min-height: 26px;
+      }
+      .locations {
+        margin-top: 17px;
+        display: grid;
+        gap: 11px;
+      }
+      .location {
+        width: 100%;
+        border: 0;
+        background: none;
+        color: inherit;
+        text-align: left;
+        padding: 0;
+      }
+      .location-text {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+      .location-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .location-count {
+        color: #a9bdcc;
+        font-variant-numeric: tabular-nums;
+      }
+      .location-track {
+        height: 6px;
+        background: #22364a;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .location-fill {
+        height: 100%;
+        background: #91a8ff;
+        border-radius: 999px;
+      }
+      .location:hover .location-name {
+        text-decoration: underline;
+      }
+      .empty-chart {
+        color: #8da3b7;
+        font-size: 13px;
+        padding: 50px 0;
+        text-align: center;
+      }
+      .results-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+      }
+      .status-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .status-btn {
+        background: #15283b;
+        border: 1px solid #2b4257;
+        border-radius: 999px;
+        color: #aebfd0;
+        padding: 7px 11px;
+        font-size: 12px;
+      }
+      .status-btn.active {
+        background: #6ae7c4;
+        border-color: #6ae7c4;
+        color: #092018;
+        font-weight: 700;
+      }
+      .sort-label {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #9fb4c6;
+        font-size: 12px;
+      }
+      .sort-label select {
+        background: #14273a;
+        border: 1px solid #2b4257;
+        border-radius: 8px;
+        color: #e8f1f7;
+        padding: 8px 10px;
+      }
+      .results-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 16px;
+        align-items: start;
+      }
+      .table-panel {
+        padding: 0;
+        overflow: hidden;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      .listings {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 610px;
+      }
+      .listings th {
+        text-align: left;
+        background: #14263a;
+        color: #8fa6b9;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 13px 15px;
+        font-weight: 700;
+      }
+      .listings td {
+        padding: 12px 15px;
+        border-top: 1px solid #23384d;
+        font-size: 12px;
+        color: #c9d7e2;
+      }
+      .listings tr.selected td {
+        background: #1b3546;
+      }
+      .listings tr:hover td {
+        background: #192d41;
+      }
+      .listings td.num,
+      .listings th.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .listing-select {
+        background: none;
+        border: 0;
+        padding: 0;
+        color: #e8f1f7;
+        font-weight: 650;
+        text-align: left;
+      }
+      .listing-select:hover {
+        text-decoration: underline;
+      }
+      .muted {
+        color: #8ca2b5;
+      }
+      .status-tag {
+        display: inline-block;
+        border-radius: 4px;
+        background: #1c3547;
+        color: #aed8cd;
+        padding: 4px 7px;
+        text-transform: capitalize;
+        white-space: nowrap;
+      }
+      .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-top: 1px solid #263b51;
+        padding: 12px 15px;
+        font-size: 12px;
+        color: #94aabc;
+      }
+      .pager {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pager button {
+        border: 1px solid #344b60;
+        background: #182c40;
+        color: #e8f1f7;
+        border-radius: 7px;
+        padding: 6px 10px;
+      }
+      .pager button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .detail-panel {
+        position: sticky;
+        top: 20px;
+      }
+      .detail-id {
+        font-size: 11px;
+        color: #6ae7c4;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+      }
+      .detail-price {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        margin: 8px 0 3px;
+      }
+      .detail-location {
+        color: #b4c6d5;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .detail-status {
+        margin: 17px 0;
+        border-top: 1px solid #2b4053;
+        padding-top: 17px;
+      }
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 17px 10px;
+      }
+      .detail-item dt {
+        color: #8fa5b8;
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+      .detail-item dd {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+      }
+      .detail-note {
+        color: #8197aa;
+        font-size: 11px;
+        line-height: 1.5;
+        margin-top: 21px;
+        border-top: 1px solid #2b4053;
+        padding-top: 13px;
+      }
+      .loading {
+        opacity: 0.55;
+        pointer-events: none;
+      }
+      .message {
+        color: #ffaeae;
+        background: #3b242e;
+        border: 1px solid #6c394a;
+        padding: 11px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 15px;
+      }
+      .hidden {
+        display: none;
+      }
+      @media (max-width: 1150px) {
+        .results-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .detail-panel {
+          position: static;
+        }
+        .detail-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+      @media (max-width: 850px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid #223549;
+          padding: 20px;
+        }
+        .brand {
+          margin-bottom: 18px;
+        }
+        .filters-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0 12px;
+        }
+        .source-note {
+          margin-top: 16px;
+        }
+        .main {
+          padding: 23px 20px 40px;
+        }
+      }
+      @media (max-width: 620px) {
+        .filters-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .metrics,
+        .analytics {
+          grid-template-columns: 1fr;
+        }
+        .metric {
+          padding: 15px;
+        }
+        .metric-value {
+          font-size: 25px;
+        }
+        .bars {
+          height: 170px;
+          gap: 5px;
+        }
+        .bar-label {
+          font-size: 9px;
+        }
+        .detail-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .main {
+          padding: 20px 14px 35px;
+        }
+        .panel {
+          padding: 16px;
+        }
+        .table-panel {
+          padding: 0;
+        }
+      }
+      @media (max-width: 390px) {
+        .filters-grid {
+          grid-template-columns: 1fr;
+        }
+        .two-fields {
+          grid-template-columns: 1fr 1fr;
+        }
+        .count-pill {
+          white-space: normal;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" aria-label="Filters">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">⌂</div>
+          <div>
+            <div class="brand-name">HOME / DATA</div>
+            <div class="brand-sub">USA Real Estate Explorer</div>
+          </div>
+        </div>
+        <h2 class="side-title">Refine the market</h2>
+        <form id="filters">
+          <div class="filters-grid">
+            <label class="field"
+              ><span>State or territory</span
+              ><select id="state" name="state">
+                <option value="">All locations</option>
+              </select></label
+            >
+            <label class="field"
+              ><span>City</span
+              ><input
+                id="city"
+                name="city"
+                type="search"
+                placeholder="Search cities"
+            /></label>
+            <label class="field"
+              ><span>Status</span
+              ><select id="status" name="status">
+                <option value="">All statuses</option>
+              </select></label
+            >
+            <div class="two-fields">
+              <label class="field"
+                ><span>Min price ($)</span
+                ><input
+                  name="min_price"
+                  type="number"
+                  min="0"
+                  placeholder="0" /></label
+              ><label class="field"
+                ><span>Max price ($)</span
+                ><input
+                  name="max_price"
+                  type="number"
+                  min="0"
+                  placeholder="Any"
+              /></label>
+            </div>
+            <div class="two-fields">
+              <label class="field"
+                ><span>Min beds</span
+                ><input
+                  name="min_beds"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Any" /></label
+              ><label class="field"
+                ><span>Min baths</span
+                ><input
+                  name="min_baths"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Any"
+              /></label>
+            </div>
+            <div class="two-fields">
+              <label class="field"
+                ><span>Min area (ft²)</span
+                ><input
+                  name="min_size"
+                  type="number"
+                  min="0"
+                  placeholder="Any" /></label
+              ><label class="field"
+                ><span>Max area (ft²)</span
+                ><input name="max_size" type="number" min="0" placeholder="Any"
+              /></label>
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button class="apply" type="submit">Apply filters</button
+            ><button id="clear" type="button">Clear</button>
+          </div>
+        </form>
+        <p class="source-note">
+          Queries use all 2,226,382 rows in the local CSV. Median prices exclude
+          missing and zero values. Price per ft² uses the source analysis bounds
+          ($1–$5,000).
+        </p>
+      </aside>
+
+      <main class="main">
+        <div class="eyebrow">Market intelligence / dataset explorer</div>
+        <div class="heading-row">
+          <div>
+            <h1>Explore the housing market</h1>
+            <p class="subtitle">
+              Filter listings, compare markets, and inspect individual records.
+            </p>
+          </div>
+          <div class="count-pill" id="total-pill">Loading dataset…</div>
+        </div>
+        <div id="error" class="message hidden" role="alert"></div>
+        <div id="content" class="loading">
+          <section class="metrics" aria-label="Filtered market summary">
+            <div class="metric">
+              <div class="metric-label">Matching listings</div>
+              <div class="metric-value" id="metric-count">—</div>
+              <div class="metric-foot">All records matching filters</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Median listing price</div>
+              <div class="metric-value" id="metric-price">—</div>
+              <div class="metric-foot" id="metric-priced-count">
+                Valid prices
+              </div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Median price / ft²</div>
+              <div class="metric-value" id="metric-ppsf">—</div>
+              <div class="metric-foot">Valid price and house size pairs</div>
+            </div>
+          </section>
+          <section class="analytics" aria-label="Filtered market charts">
+            <div class="panel">
+              <div class="panel-top">
+                <h2>Price distribution</h2>
+                <span class="panel-kicker">Valid listings</span>
+              </div>
+              <div
+                class="bars"
+                id="price-bars"
+                role="img"
+                aria-label="Price distribution"
+              ></div>
+            </div>
+            <div class="panel">
+              <div class="panel-top">
+                <h2 id="location-title">Top states</h2>
+                <span class="panel-kicker">Select to filter</span>
+              </div>
+              <div class="locations" id="locations"></div>
+            </div>
+          </section>
+          <section aria-labelledby="listings-title">
+            <div class="results-top">
+              <div>
+                <h2 id="listings-title">Listings</h2>
+                <p class="subtitle" id="results-count" aria-live="polite">
+                  Loading…
+                </p>
+              </div>
+              <label class="sort-label"
+                >Sort
+                <select id="sort">
+                  <option value="source">Dataset order</option>
+                  <option value="price_asc">Price: low to high</option>
+                  <option value="price_desc">Price: high to low</option>
+                </select></label
+              >
+            </div>
+            <div
+              class="status-row"
+              id="status-buttons"
+              aria-label="Filter by status"
+            ></div>
+            <div class="results-layout" style="margin-top: 15px">
+              <div class="panel table-panel">
+                <div class="table-wrap">
+                  <table class="listings">
+                    <thead>
+                      <tr>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th class="num">Price</th>
+                        <th class="num">Beds</th>
+                        <th class="num">Baths</th>
+                        <th class="num">Area</th>
+                      </tr>
+                    </thead>
+                    <tbody id="listing-rows"></tbody>
+                  </table>
+                </div>
+                <div class="table-footer">
+                  <span id="page-summary">—</span>
+                  <div class="pager">
+                    <button id="prev" type="button" aria-label="Previous page">
+                      ‹</button
+                    ><span id="page-label">1</span
+                    ><button id="next" type="button" aria-label="Next page">
+                      ›
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <aside
+                class="panel detail-panel"
+                aria-label="Selected listing details"
+                id="detail"
+              >
+                <div class="empty-chart">Select a listing to see details.</div>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const number = new Intl.NumberFormat("en-US");
+      const currency = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      });
+      const short = new Intl.NumberFormat("en-US", {
+        notation: "compact",
+        maximumFractionDigits: 1,
+      });
+      const escapeHtml = (value) =>
+        String(value ?? "").replace(
+          /[&<>"']/g,
+          (char) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[char],
+        );
+      const labelStatus = (value) => value.replaceAll("_", " ");
+      const state = {
+        page: 0,
+        data: null,
+        selected: null,
+        request: 0,
+        cityExact: false,
+      };
+      const filters = $("filters");
+      const money = (value) => (value == null ? "—" : currency.format(value));
+      const plain = (value) => (value == null ? "—" : number.format(value));
+
+      function params() {
+        const result = new URLSearchParams();
+        new FormData(filters).forEach((value, key) => {
+          if (String(value).trim()) result.set(key, String(value).trim());
+        });
+        if (state.cityExact && result.has("city"))
+          result.set("city_exact", "1");
+        result.set("sort", $("sort").value);
+        result.set("page", state.page);
+        return result;
+      }
+      function error(message) {
+        $("error").textContent = message;
+        $("error").classList.toggle("hidden", !message);
+      }
+      async function load() {
+        const request = ++state.request;
+        $("content").classList.add("loading");
+        error("");
+        try {
+          const response = await fetch("/api/explore?" + params());
+          const data = await response.json();
+          if (!response.ok)
+            throw new Error(data.error || "Unable to load results");
+          if (request !== state.request) return;
+          state.data = data;
+          if (!data.listings.some((item) => item.id === state.selected))
+            state.selected = data.listings[0]?.id ?? null;
+          render(data);
+        } catch (cause) {
+          if (request === state.request)
+            error(cause.message + ". Check the filters and try again.");
+        } finally {
+          if (request === state.request)
+            $("content").classList.remove("loading");
+        }
+      }
+      function render(data) {
+        $("metric-count").textContent = number.format(data.matched);
+        $("metric-price").textContent = money(data.median_price);
+        $("metric-priced-count").textContent =
+          `${number.format(data.priced)} valid prices`;
+        $("metric-ppsf").textContent =
+          data.median_ppsf == null ? "—" : `${money(data.median_ppsf)} / ft²`;
+        $("results-count").textContent =
+          `${number.format(data.matched)} matching records`;
+        renderPrice(data.price_distribution);
+        renderLocations(data.locations, data.location_type);
+        renderStatuses(data.statuses);
+        renderListings(data);
+        renderDetail(data.listings.find((item) => item.id === state.selected));
+      }
+      function renderPrice(rows) {
+        const max = Math.max(1, ...rows.map((row) => row.count));
+        $("price-bars").innerHTML = rows
+          .map(
+            (row) =>
+              `<div class="bar-col"><span class="bar-value">${escapeHtml(short.format(row.count))}</span><div class="bar" style="height:${Math.max(row.count ? 3 : 2, (145 * row.count) / max)}px"></div><span class="bar-label">${escapeHtml(row.label)}</span></div>`,
+          )
+          .join("");
+        $("price-bars").setAttribute(
+          "aria-label",
+          "Price distribution: " +
+            rows
+              .map((row) => `${row.label}: ${number.format(row.count)}`)
+              .join("; "),
+        );
+      }
+      function renderLocations(rows, type) {
+        $("location-title").textContent =
+          type === "city" ? "Top cities" : "Top states";
+        const max = Math.max(1, ...rows.map((row) => row.count));
+        $("locations").innerHTML = rows.length
+          ? rows
+              .map(
+                (row, index) =>
+                  `<button class="location" type="button" data-location="${index}" aria-label="Filter ${type} to ${escapeHtml(row.name)}, ${number.format(row.count)} listings"><span class="location-text"><span class="location-name">${escapeHtml(row.name)}</span><span class="location-count">${escapeHtml(short.format(row.count))}</span></span><div class="location-track"><div class="location-fill" style="width:${(100 * row.count) / max}%"></div></div></button>`,
+              )
+              .join("")
+          : '<div class="empty-chart">No locations match these filters.</div>';
+        $("locations")
+          .querySelectorAll("button")
+          .forEach((button) =>
+            button.addEventListener("click", () => {
+              const item = rows[Number(button.dataset.location)];
+              if (type === "state") $("state").value = item.name;
+              else {
+                $("city").value = item.name;
+                state.cityExact = true;
+              }
+              state.page = 0;
+              state.selected = null;
+              load();
+            }),
+          );
+      }
+      function renderStatuses(rows) {
+        const current = $("status").value;
+        $("status-buttons").innerHTML =
+          `<button type="button" class="status-btn ${current ? "" : "active"}" data-status="">All statuses</button>` +
+          rows
+            .map(
+              (row) =>
+                `<button type="button" class="status-btn ${current === row.name ? "active" : ""}" data-status="${escapeHtml(row.name)}">${escapeHtml(labelStatus(row.name))} · ${escapeHtml(short.format(row.count))}</button>`,
+            )
+            .join("");
+        $("status-buttons")
+          .querySelectorAll("button")
+          .forEach((button) =>
+            button.addEventListener("click", () => {
+              $("status").value = button.dataset.status;
+              state.page = 0;
+              state.selected = null;
+              load();
+            }),
+          );
+      }
+      function renderListings(data) {
+        $("listing-rows").innerHTML = data.listings.length
+          ? data.listings
+              .map(
+                (item) =>
+                  `<tr class="${item.id === state.selected ? "selected" : ""}"><td><button type="button" class="listing-select" data-id="${item.id}">${escapeHtml(item.city || "Unknown city")}, ${escapeHtml(item.state || "Unknown state")}</button><br><span class="muted">${escapeHtml(item.zip_code || "ZIP unavailable")}</span></td><td><span class="status-tag">${escapeHtml(labelStatus(item.status || "unknown"))}</span></td><td class="num">${money(item.price)}</td><td class="num">${plain(item.bed)}</td><td class="num">${plain(item.bath)}</td><td class="num">${item.house_size == null ? "—" : plain(item.house_size) + " ft²"}</td></tr>`,
+              )
+              .join("")
+          : '<tr><td colspan="6" class="muted">No listings match these filters.</td></tr>';
+        $("listing-rows")
+          .querySelectorAll(".listing-select")
+          .forEach((button) =>
+            button.addEventListener("click", () => {
+              state.selected = Number(button.dataset.id);
+              $("listing-rows")
+                .querySelectorAll("tr")
+                .forEach((row) =>
+                  row.classList.toggle(
+                    "selected",
+                    Number(row.querySelector(".listing-select")?.dataset.id) ===
+                      state.selected,
+                  ),
+                );
+              renderDetail(
+                data.listings.find((item) => item.id === state.selected),
+              );
+            }),
+          );
+        const start = data.matched ? data.page * data.page_size + 1 : 0;
+        const end = Math.min(data.matched, (data.page + 1) * data.page_size);
+        $("page-summary").textContent =
+          `${number.format(start)}–${number.format(end)} of ${number.format(data.matched)}`;
+        $("page-label").textContent = `Page ${number.format(data.page + 1)}`;
+        $("prev").disabled = data.page === 0;
+        $("next").disabled = end >= data.matched;
+      }
+      function renderDetail(item) {
+        if (!item) {
+          $("detail").innerHTML =
+            '<div class="empty-chart">Select a listing to see details.</div>';
+          return;
+        }
+        const detail = [
+          ["Bedrooms", plain(item.bed)],
+          ["Bathrooms", plain(item.bath)],
+          [
+            "Living area",
+            item.house_size == null ? "—" : `${plain(item.house_size)} ft²`,
+          ],
+          [
+            "Price / ft²",
+            item.price > 0 && item.house_size > 0
+              ? money(item.price / item.house_size)
+              : "—",
+          ],
+          [
+            "Lot area",
+            item.acre_lot == null ? "—" : `${plain(item.acre_lot)} acres`,
+          ],
+          ["ZIP code", item.zip_code || "—"],
+          ["Previous sale", item.prev_sold_date || "—"],
+          [
+            "Broker ID",
+            item.brokered_by == null ? "—" : plain(item.brokered_by),
+          ],
+        ];
+        $("detail").innerHTML =
+          `<div class="detail-id">Record #${number.format(item.id)}</div><div class="detail-price">${money(item.price)}</div><div class="detail-location">${escapeHtml(item.city || "Unknown city")}, ${escapeHtml(item.state || "Unknown state")}</div><div class="detail-status"><span class="status-tag">${escapeHtml(labelStatus(item.status || "unknown"))}</span></div><dl class="detail-grid">${detail.map(([label, value]) => `<div class="detail-item"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl><div class="detail-note">Record number is its row in the CSV. Street values in this dataset are mostly numeric IDs, so no street address is shown.</div>`;
+      }
+      filters.addEventListener("submit", (event) => {
+        event.preventDefault();
+        state.page = 0;
+        state.selected = null;
+        load();
+      });
+      $("city").addEventListener("input", () => {
+        state.cityExact = false;
+      });
+      $("clear").addEventListener("click", () => {
+        filters.reset();
+        $("sort").value = "source";
+        state.page = 0;
+        state.selected = null;
+        state.cityExact = false;
+        load();
+      });
+      $("sort").addEventListener("change", () => {
+        state.page = 0;
+        state.selected = null;
+        load();
+      });
+      $("prev").addEventListener("click", () => {
+        if (state.page > 0) {
+          state.page--;
+          state.selected = null;
+          load();
+        }
+      });
+      $("next").addEventListener("click", () => {
+        if (
+          state.data &&
+          (state.page + 1) * state.data.page_size < state.data.matched
+        ) {
+          state.page++;
+          state.selected = null;
+          load();
+        }
+      });
+      (async () => {
+        try {
+          const response = await fetch("/api/meta");
+          if (!response.ok) throw new Error("The data service is unavailable");
+          const meta = await response.json();
+          $("total-pill").textContent =
+            `${number.format(meta.total)} source listings`;
+          $("state").innerHTML += meta.states
+            .map(
+              (name) =>
+                `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`,
+            )
+            .join("");
+          $("status").innerHTML += meta.statuses
+            .map(
+              (name) =>
+                `<option value="${escapeHtml(name)}">${escapeHtml(labelStatus(name))}</option>`,
+            )
+            .join("");
+          load();
+        } catch (cause) {
+          $("content").classList.remove("loading");
+          error(
+            cause.message + ". Start the dashboard server from this project.",
+          );
+        }
+      })();
+    </script>
+  </body>
+</html>
