@@ -6,7 +6,7 @@
   const LABELS = ["<$100k", "$100–200k", "$200–300k", "$300–500k", "$500–750k", "$750k–1m", "$1–2m", "$2m+"];
 
   function validPrice(row) {
-    return Number.isFinite(row.price) && row.price > 0 && row.price < 5000000000;
+    return Number.isFinite(row.price) && row.price >= 1000 && row.price < 1000000000;
   }
 
   function median(values) {

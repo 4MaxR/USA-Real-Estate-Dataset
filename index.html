@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>USA Real Estate Dashboard</title>
+    <meta
+      name="description"
+      content="Interactive market dashboard for 2,226,382 US Realtor.com records: price distribution, price per square foot by size, bedrooms, sold vs for-sale mix, state ranking, and data quality — computed from the full dataset."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2032%2032%27%3E%3Crect%20width=%2732%27%20height=%2732%27%20rx=%277%27%20fill=%27%2308111f%27/%3E%3Cpath%20d=%27M8%2016l8-7%208%207v8H8z%27%20fill=%27none%27%20stroke=%27%236ae7c4%27%20stroke-width=%272.4%27%20stroke-linejoin=%27round%27/%3E%3C/svg%3E"
+    />
+    <script>
+      try {
+        var saved = localStorage.getItem("theme");
+        if (saved === "light" || saved === "dark")
+          document.documentElement.setAttribute("data-theme", saved);
+      } catch (e) {}
+    </script>
+    <style>
+      /* ── tokens: light ─────────────────────────────── */
+      :root {
+        color-scheme: light;
+        --page: #f5f8f8;
+        --surface: #ffffff;
+        --surface-2: #eef3f4;
+        --ink: #122033;
+        --ink-2: #44525f;
+        --muted: #637183;
+        --grid: #e4e9ed;
+        --axis: #c3ccd4;
+        --border: rgba(12, 29, 42, 0.12);
+        --brand: #047d68;
+        --s1: #00876b;
+        --s2: #506eda;
+        --deemph: #c9d2da;
+        --shadow: 0 18px 48px rgba(13, 33, 48, 0.1);
+        --sans: Manrope, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --mono: "DM Mono", ui-monospace, monospace;
+      }
+      /* ── tokens: dark (OS setting, unless the viewer picked light) ── */
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          color-scheme: dark;
+          --page: #08111f;
+          --surface: #0d1929;
+          --surface-2: #122236;
+          --ink: #eff5f5;
+          --ink-2: #b7c3d0;
+          --muted: #8b9aac;
+          --grid: #1b2a3d;
+          --axis: #2e405a;
+          --border: rgba(225, 239, 241, 0.11);
+          --brand: #6ae7c4;
+          --s1: #22a888;
+          --s2: #6d84ee;
+          --deemph: #34465c;
+          --shadow: 0 18px 48px rgba(0, 0, 0, 0.3);
+        }
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --page: #08111f;
+        --surface: #0d1929;
+        --surface-2: #122236;
+        --ink: #eff5f5;
+        --ink-2: #b7c3d0;
+        --muted: #8b9aac;
+        --grid: #1b2a3d;
+        --axis: #2e405a;
+        --border: rgba(225, 239, 241, 0.11);
+        --brand: #6ae7c4;
+        --s1: #22a888;
+        --s2: #6d84ee;
+        --deemph: #34465c;
+        --shadow: 0 18px 48px rgba(0, 0, 0, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--ink);
+        font: 400 15px/1.6 var(--sans);
+      }
+      a {
+        color: inherit;
+      }
+      button,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--brand);
+        outline-offset: 2px;
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.86em;
+      }
+      .skip-link {
+        position: absolute;
+        left: 12px;
+        top: -60px;
+        background: var(--brand);
+        color: var(--page);
+        padding: 8px 14px;
+        border-radius: 6px;
+        z-index: 20;
+      }
+      .skip-link:focus {
+        top: 10px;
+      }
+      .wrap {
+        width: min(1240px, 100% - 32px);
+        margin: 0 auto;
+      }
+
+      /* ── header ─────────────────────────────────── */
+      .top {
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .top .wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 64px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
+      .brand-mark {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: var(--s1);
+        display: grid;
+        place-items: center;
+      }
+      .brand-mark svg {
+        width: 18px;
+        height: 18px;
+      }
+      .brand b {
+        display: block;
+        font-size: 14px;
+        letter-spacing: 0.01em;
+      }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .top nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .top nav a,
+      .icon-btn {
+        font: 500 12px/1 var(--mono);
+        text-decoration: none;
+        color: var(--ink-2);
+        padding: 9px 11px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: none;
+        cursor: pointer;
+      }
+      .top nav a:hover,
+      .icon-btn:hover {
+        border-color: var(--border);
+        color: var(--ink);
+      }
+
+      /* ── intro ──────────────────────────────────── */
+      .intro {
+        padding: 44px 0 8px;
+      }
+      .eyebrow {
+        font: 500 11px/1.4 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brand);
+        margin: 0 0 12px;
+      }
+      h1 {
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.12;
+        letter-spacing: -0.035em;
+        margin: 0 0 14px;
+        max-width: 860px;
+      }
+      .lede {
+        color: var(--ink-2);
+        max-width: 760px;
+        margin: 0;
+      }
+
+      /* ── blocks ─────────────────────────────────── */
+      .block {
+        padding: 36px 0 8px;
+      }
+      .block-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      h2 {
+        font-size: 20px;
+        letter-spacing: -0.015em;
+        margin: 0;
+      }
+      .block-head p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+      }
+      .filter-row label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .filter-row select {
+        min-height: 40px;
+        min-width: 220px;
+        max-width: 100%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
+      .ghost-btn {
+        min-height: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .ghost-btn:hover {
+        background: var(--surface-2);
+      }
+      .filter-note {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      /* ── stat tiles ─────────────────────────────── */
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .tile,
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .tile {
+        padding: 16px 18px;
+        min-width: 0;
+      }
+      .tile-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0;
+      }
+      .tile-value {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        margin: 6px 0 4px;
+      }
+      .tile-foot {
+        font-size: 12px;
+        color: var(--ink-2);
+        margin: 0;
+      }
+      .meter {
+        display: flex;
+        gap: 2px;
+        height: 10px;
+        margin: 14px 0 10px;
+      }
+      .meter span {
+        display: block;
+        height: 100%;
+        min-width: 2px;
+      }
+      .meter span:first-child {
+        border-radius: 4px 0 0 4px;
+      }
+      .meter span:last-child {
+        border-radius: 0 4px 4px 0;
+      }
+      .legend {
+        display: flex;
+        gap: 4px 14px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: var(--ink-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .legend li {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        display: inline-block;
+        flex: none;
+      }
+
+      /* ── panels ─────────────────────────────────── */
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .stack {
+        display: grid;
+        gap: 16px;
+        min-width: 0;
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+      .panel {
+        margin: 0;
+        padding: 18px 18px 14px;
+        min-width: 0;
+      }
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .panel h3 {
+        font-size: 15px;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      .panel-sub {
+        margin: 3px 0 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .table-toggle {
+        flex: none;
+        font: 500 11px/1 var(--mono);
+        border: 1px solid var(--border);
+        background: none;
+        border-radius: 6px;
+        padding: 7px 9px;
+        cursor: pointer;
+        color: var(--ink-2);
+      }
+      .table-toggle[aria-pressed="true"] {
+        background: var(--surface-2);
+        color: var(--ink);
+      }
+      .chart {
+        width: 100%;
+        min-width: 0;
+      }
+      .panel figcaption {
+        font-size: 13px;
+        color: var(--ink-2);
+        border-top: 1px solid var(--border);
+        margin-top: 10px;
+        padding-top: 10px;
+      }
+      .panel figcaption strong {
+        color: var(--ink);
+      }
+      .chart-legend {
+        margin: 0 0 8px;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        margin-top: 10px;
+      }
+      .is-loading .chart,
+      .is-loading .tile-value {
+        opacity: 0.45;
+      }
+
+      /* ── issue cards ────────────────────────────── */
+      .issues {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .issue {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+      }
+      .issue small {
+        font: 500 10.5px/1.3 var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .issue strong {
+        display: block;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        margin: 6px 0 4px;
+      }
+      .issue p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--ink-2);
+      }
+
+      /* ── method notes / footer ──────────────────── */
+      .notes {
+        margin: 36px 0 0;
+        padding: 20px 0 48px;
+        border-top: 1px solid var(--border);
+        color: var(--ink-2);
+        font-size: 13px;
+      }
+      .notes h2 {
+        font-size: 15px;
+        margin-bottom: 8px;
+      }
+      .notes ul {
+        margin: 0 0 16px;
+        padding-left: 18px;
+      }
+      .notes li {
+        margin-bottom: 4px;
+      }
+      .message {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-left: 3px solid var(--s2);
+        padding: 12px 14px;
+        border-radius: 8px;
+        margin: 16px 0;
+      }
+      [hidden] {
+        display: none !important;
+      }
+
+      /* ── chart chrome (ReCharts classes) ────────── */
+      .viz {
+        display: block;
+        overflow: visible;
+        font-family: var(--sans);
+      }
+      .viz:focus {
+        outline: none;
+      }
+      .viz:focus-visible {
+        outline: 2px solid var(--brand);
+        outline-offset: 4px;
+        border-radius: 4px;
+      }
+      .viz-grid {
+        stroke: var(--grid);
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+      }
+      .viz-axis {
+        stroke: var(--axis);
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+      }
+      .viz-tick {
+        fill: var(--muted);
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+      }
+      .viz-cat {
+        fill: var(--ink-2);
+        font-size: 12px;
+      }
+      .viz-cat.is-emphasis {
+        fill: var(--ink);
+        font-weight: 700;
+      }
+      .viz-value {
+        fill: var(--ink-2);
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .viz-ref {
+        stroke: var(--ink-2);
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+      }
+      .viz-ref-label {
+        fill: var(--ink);
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .viz-mark {
+        transition: opacity 0.15s;
+      }
+      .viz-s1 {
+        fill: var(--s1);
+        background: var(--s1);
+      }
+      .viz-s2 {
+        fill: var(--s2);
+        background: var(--s2);
+      }
+      .viz-deemph {
+        fill: var(--deemph);
+        background: var(--deemph);
+      }
+      .viz-mark.is-active {
+        opacity: 0.72;
+      }
+      .viz-hit {
+        fill: transparent;
+      }
+      .viz-selectable {
+        cursor: pointer;
+      }
+      .viz-tooltip {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 50;
+        pointer-events: none;
+        background: var(--surface);
+        color: var(--ink);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        border-radius: 8px;
+        padding: 9px 11px;
+        font: 400 12px/1.45 var(--sans);
+        min-width: 140px;
+        max-width: 260px;
+        opacity: 0;
+        transition: opacity 0.12s;
+      }
+      .viz-tooltip.is-visible {
+        opacity: 1;
+      }
+      .viz-tooltip-title {
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .viz-tooltip-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .viz-tooltip-row strong {
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      .viz-tooltip-row span {
+        color: var(--ink-2);
+      }
+      .viz-key {
+        width: 12px;
+        height: 2px;
+        border-radius: 1px;
+        flex: none;
+      }
+      .viz-sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .viz-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .viz-table th {
+        text-align: left;
+        font-weight: 600;
+        color: var(--muted);
+        border-bottom: 1px solid var(--axis);
+        padding: 6px 8px;
+      }
+      .viz-table td {
+        border-bottom: 1px solid var(--grid);
+        padding: 5px 8px;
+      }
+      .viz-table .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ── responsive ─────────────────────────────── */
+      @media (max-width: 1000px) {
+        .grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .kpis {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .issues {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 680px) {
+        .pair,
+        .issues {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .kpis {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .filter-row label {
+          flex-wrap: wrap;
+          width: 100%;
+        }
+        .filter-row select {
+          width: 100%;
+          min-width: 0;
+        }
+        .panel {
+          padding: 14px 12px 12px;
+        }
+        .tile-value {
+          font-size: 26px;
+        }
+      }
+      @media (forced-colors: active) {
+        .viz-s1,
+        .viz-s2,
+        .viz-deemph {
+          fill: CanvasText;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="./">
+          <span class="brand-mark" aria-hidden="true"
+            ><svg viewBox="0 0 24 24">
+              <path
+                d="M4 12l8-7 8 7v8H4z"
+                fill="none"
+                stroke="#fff"
+                stroke-width="2.4"
+                stroke-linejoin="round"
+              /></svg
+          ></span>
+          <span><b>USA Real Estate</b><small>Market dashboard</small></span>
+        </a>
+        <nav aria-label="Project links">
+          <a
+            href="https://mostafaalrouby.com/projects/usa-real-estate.html"
+            target="_blank"
+            rel="noreferrer"
+            >Case study ↗</a
+          >
+          <a href="https://github.com/4MaxR/USA-Real-Estate-Dataset" target="_blank" rel="noreferrer"
+            >GitHub ↗</a
+          >
+          <a href="explorer.html">Listing explorer</a>
+          <button class="icon-btn" id="theme" type="button" aria-label="Switch to light mode">
+            ◐ Theme
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="wrap">
+      <section class="intro">
+        <p class="eyebrow">2,226,382 Realtor.com records · full dataset, not a sample</p>
+        <h1>What a US home costs — and what actually sets the price</h1>
+        <p class="lede">
+          Every figure is computed from the full CSV by <code>scripts/analyze_data.py</code>.
+          Prices are asking prices for active records and sale prices for sold records (all sold
+          between Oct 2021 and May 2022), so medians that mix them blend two moments in the
+          market.
+        </p>
+      </section>
+
+      <div id="error" class="message" role="alert" hidden></div>
+
+      <!-- ============ FILTERED: MARKET VIEW ============ -->
+      <section class="block is-loading" id="market" aria-labelledby="market-title">
+        <div class="block-head">
+          <h2 id="market-title">Market view</h2>
+          <p>Everything in this section follows the geography filter.</p>
+        </div>
+
+        <div class="filter-row">
+          <label for="geo">Geography</label>
+          <select id="geo" aria-describedby="geo-note">
+            <option value="All">All US records</option>
+          </select>
+          <button class="ghost-btn" id="reset" type="button" hidden>Show all US</button>
+          <span class="filter-note" id="geo-note">Tip: select a bar in the state ranking.</span>
+        </div>
+
+        <div class="kpis" aria-label="Summary for the selected geography">
+          <article class="tile">
+            <p class="tile-label">Records</p>
+            <p class="tile-value" id="k-records">—</p>
+            <p class="tile-foot" id="k-records-foot">&nbsp;</p>
+          </article>
+          <article class="tile">
+            <p class="tile-label">Median price</p>
+            <p class="tile-value" id="k-price">—</p>
+            <p class="tile-foot" id="k-price-foot">&nbsp;</p>
+          </article>
+          <article class="tile">
+            <p class="tile-label">Median price per sq ft</p>
+            <p class="tile-value" id="k-pps">—</p>
+            <p class="tile-foot" id="k-pps-foot">&nbsp;</p>
+          </article>
+          <article class="tile">
+            <p class="tile-label">Status mix</p>
+            <div class="meter" id="k-meter" aria-hidden="true"></div>
+            <ul class="legend" id="k-status"></ul>
+          </article>
+        </div>
+
+        <div class="grid">
+          <div class="stack">
+            <figure class="panel" id="fig-hist">
+              <div class="panel-head">
+                <div>
+                  <h3>Price distribution</h3>
+                  <p class="panel-sub">Records per price band · log price axis, 8 bands per decade</p>
+                </div>
+                <button class="table-toggle" type="button" aria-pressed="false">Table</button>
+              </div>
+              <div class="chart"></div>
+              <div class="table-wrap" hidden></div>
+              <figcaption></figcaption>
+            </figure>
+
+            <figure class="panel" id="fig-pps">
+              <div class="panel-head">
+                <div>
+                  <h3>Price per sq ft by house size</h3>
+                  <p class="panel-sub">Median $/sq ft · house size bands in sq ft</p>
+                </div>
+                <button class="table-toggle" type="button" aria-pressed="false">Table</button>
+              </div>
+              <div class="chart"></div>
+              <div class="table-wrap" hidden></div>
+              <figcaption></figcaption>
+            </figure>
+
+            <div class="pair">
+              <figure class="panel" id="fig-beds">
+                <div class="panel-head">
+                  <div>
+                    <h3>Median price by bedrooms</h3>
+                    <p class="panel-sub">All statuses · 9+ groups 9–20 beds</p>
+                  </div>
+                  <button class="table-toggle" type="button" aria-pressed="false">Table</button>
+                </div>
+                <div class="chart"></div>
+                <div class="table-wrap" hidden></div>
+                <figcaption></figcaption>
+              </figure>
+
+              <figure class="panel" id="fig-status">
+                <div class="panel-head">
+                  <div>
+                    <h3>Sold vs for sale, same bedrooms</h3>
+                    <p class="panel-sub">Median price · 1–6 bedrooms</p>
+                  </div>
+                  <button class="table-toggle" type="button" aria-pressed="false">Table</button>
+                </div>
+                <ul class="legend chart-legend">
+                  <li><i class="swatch viz-s1"></i>For sale</li>
+                  <li><i class="swatch viz-s2"></i>Sold</li>
+                </ul>
+                <div class="chart"></div>
+                <div class="table-wrap" hidden></div>
+                <figcaption></figcaption>
+              </figure>
+            </div>
+          </div>
+
+          <figure class="panel" id="fig-states">
+            <div class="panel-head">
+              <div>
+                <h3>Median price by state</h3>
+                <p class="panel-sub">52 places with ≥ 1,000 records · select a bar to filter</p>
+              </div>
+              <button class="table-toggle" type="button" aria-pressed="false">Table</button>
+            </div>
+            <div class="chart"></div>
+            <div class="table-wrap" hidden></div>
+            <figcaption></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- ============ NATIONWIDE: NOT FILTERED ============ -->
+      <section class="block" aria-labelledby="dataset-title">
+        <div class="block-head">
+          <h2 id="dataset-title">Dataset-wide findings</h2>
+          <p>All records · not affected by the geography filter.</p>
+        </div>
+        <div class="pair">
+          <figure class="panel" id="fig-drivers">
+            <div class="panel-head">
+              <div>
+                <h3>What explains price?</h3>
+                <p class="panel-sub">Share of variation in log price explained by each factor</p>
+              </div>
+              <button class="table-toggle" type="button" aria-pressed="false">Table</button>
+            </div>
+            <ul class="legend chart-legend">
+              <li><i class="swatch viz-s1"></i>On its own</li>
+              <li><i class="swatch viz-s2"></i>Of what size leaves unexplained</li>
+            </ul>
+            <div class="chart"></div>
+            <div class="table-wrap" hidden></div>
+            <figcaption></figcaption>
+          </figure>
+
+          <figure class="panel" id="fig-missing">
+            <div class="panel-head">
+              <div>
+                <h3>Missing values by column</h3>
+                <p class="panel-sub">Share of 2,226,382 records with no value</p>
+              </div>
+              <button class="table-toggle" type="button" aria-pressed="false">Table</button>
+            </div>
+            <div class="chart"></div>
+            <div class="table-wrap" hidden></div>
+            <figcaption></figcaption>
+          </figure>
+        </div>
+
+        <div class="issues" id="issues"></div>
+      </section>
+
+      <section class="notes" aria-labelledby="notes-title">
+        <h2 id="notes-title">Method</h2>
+        <ul id="method"></ul>
+        <p>
+          Source: <code>data/realtor-data.zip.csv</code>, a Realtor.com listing export (no
+          documentation ships with it). Want individual records? The
+          <a href="explorer.html">listing explorer</a> filters a reproducible 50,000-record
+          sample in the browser.
+        </p>
+      </section>
+    </main>
+
+    <script src="assets/charts.js"></script>
+    <script src="assets/dashboard.js"></script>
+  </body>
+</html>

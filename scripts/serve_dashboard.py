@@ -46,7 +46,7 @@ class Explorer:
         self.size = frame["house_size"].to_numpy()
         self.bed = frame["bed"].to_numpy()
         self.bath = frame["bath"].to_numpy()
-        self.valid_price = np.isfinite(self.price) & (self.price > 0) & (self.price < 5_000_000_000)
+        self.valid_price = np.isfinite(self.price) & (self.price >= 1_000) & (self.price < 1_000_000_000)
         with np.errstate(divide="ignore", invalid="ignore"):
             self.ppsf = self.price / self.size
         self.valid_ppsf = self.valid_price & np.isfinite(self.ppsf) & (self.ppsf > 1) & (self.ppsf < 5000)
